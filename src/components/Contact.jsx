@@ -25,30 +25,46 @@ export const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
+    console.log("Sending email with: ");
+    console.log("Service ID:", import.meta.env.VITE_EMAILJS_SERVICE_ID);
+    console.log("Template ID:", import.meta.env.VITE_EMAILJS_TEMPLATE_ID);
+    console.log("Public Key:", import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+
     emailjs.sendForm(
       import.meta.env.VITE_EMAILJS_SERVICE_ID,
       import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
       form.current,
       import.meta.env.VITE_EMAILJS_PUBLIC_KEY
     )
-      .then(() => {
-        setSnackbar({
-          open: true,
-          message: 'Message sent successfully!',
-          severity: 'success'
-        });
-        form.current.reset();
-      })
-      .catch(() => {
-        setSnackbar({
-          open: true,
-          message: 'Failed to send message. Please try again.',
-          severity: 'error'
-        });
-      })
-      .finally(() => {
-        setLoading(false);
+    .then((response) => {
+      console.log("EmailJS Success:", response);
+      setSnackbar({
+        open: true,
+        message: 'Message sent successfully!',
+        severity: 'success'
       });
+      form.current.reset();
+    })
+    .catch((error) => {
+      console.error("EmailJS Error:", error);
+
+      let errorMessage = "Failed to send message. Please try again.";
+
+      if (error?.text) {
+        errorMessage = `Error: ${error.text}`;
+      } else if (error?.status) {
+        errorMessage = `Error ${error.status}: ${error.statusText}`;
+      }
+
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error'
+      });
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   };
 
   return (
